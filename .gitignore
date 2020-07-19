@@ -56,3 +56,4 @@ obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
 obj/Debug/DesignTimeResolveAssemblyReferences.cache
 obj/Debug/build.force
 obj/Debug/AxInterop.WMPLib.dll
+bin/Debug/account.json

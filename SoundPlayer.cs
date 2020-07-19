@@ -46,7 +46,6 @@ namespace SoundInvoker
             if (Loaded(url)) { }
             else
             {
-
                 mplayer[index].URL = url;
                 mplayer[index].controls.play();
                 index++;
@@ -73,6 +72,11 @@ namespace SoundInvoker
                 }
             }
             return false;
+        }
+
+        internal void Stop(string path)
+        {
+            Loaded(path);
         }
     }
 }

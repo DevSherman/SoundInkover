@@ -7,7 +7,6 @@ namespace SoundInvoker
     public partial class OptionsUI : Form
     {
         public bool IsOpen = false;
-
         public Options options;
         public bool editk1 = false;
         public bool editk2 = false;
@@ -17,9 +16,12 @@ namespace SoundInvoker
             InitializeComponent();
         }
         private void OptionsUI_Load(object sender, EventArgs e)
+        {       
+            Reload();
+        }
+        public void Reload()
         {
             IsOpen = true;
-
             barVolume.Value = options.volume;
             lvolume.Text = options.volume.ToString();
             barCache.Value = options.max_cache;
@@ -28,7 +30,7 @@ namespace SoundInvoker
             b1k1.Text = options.b1k1;
             b1k2.Text = options.b1k2;
             b2k1.Text = options.b2k1;
-            b2k2.Text = options.b2k2;  
+            b2k2.Text = options.b2k2;
         }
         private void B1_Click(object sender, EventArgs e)
         {
@@ -124,9 +126,6 @@ namespace SoundInvoker
 
             barVolume.Value = options.volume;
             lvolume.Text = options.volume.ToString();
-
-            Console.WriteLine(options.volume);
-
             MainForm.INSTANCE.GetSoundPlayer().SetVolume(options.volume);
         }
 
@@ -137,9 +136,6 @@ namespace SoundInvoker
 
             barVolume.Value = options.volume;
             lvolume.Text = options.volume.ToString();
-
-            Console.WriteLine(options.volume);
-
             MainForm.INSTANCE.GetSoundPlayer().SetVolume(options.volume);
         }
     }

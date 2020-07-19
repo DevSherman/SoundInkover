@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
+using static SoundInvoker.Extensions;
 
 namespace SoundInvoker
 {
@@ -12,13 +13,19 @@ namespace SoundInvoker
             InitializeComponent();
         }
         private const int MAX_ITEMS = 25;
+        private int DELAY = 100;
 
         public static MainForm INSTANCE;
         private OptionsUI optionsUI;
-
-        private Button[] buttons;
-        private List<SoundItem> items;   
+        private List<SoundItem> audioITEM;   
         private KeyboardListener listener;
+
+        private TwitchOptions twitchOptions;
+        public TwitchAccount account;
+        public bool logged = false;
+        private TwitchIRC IRC;
+
+        //oauth:j9sh9gd5twuf98cct19w9zk44ycqvg
 
         private SoundPlayer splayer;
         public SoundPlayer GetSoundPlayer() { return splayer; }
@@ -31,44 +38,83 @@ namespace SoundInvoker
                 this.Close();
                 return;
             }
-
             INSTANCE = this;
-
+            audioITEM = Extensions.Load();
+            for (int i = 0; i < audioITEM.Count; i++)
+            {
+                AudioControl control = new AudioControl();
+                control.SetAudio(audioITEM[i]);
+                flowLayoutPanel.Controls.Add(control);
+            }
             optionsUI = new OptionsUI
             {
                 options = Extensions.LoadOptions()
             };
-            splayer = new SoundPlayer(optionsUI.options.max_cache);
+            account = Extensions.LoadAccount();
+            twitchOptions = new TwitchOptions();
+            if (account.auto_login) TwitchLogin();
 
-            items = new List<SoundItem>(MAX_ITEMS);
+            splayer = new SoundPlayer(optionsUI.options.max_cache);
+            audioITEM = new List<SoundItem>(MAX_ITEMS);
 
             listener = new KeyboardListener();
             listener.KeyDown += Listener_KeyDown;
             listener.KeyUp += Listener_KeyUp;
+        }
 
-            buttons = new Button[]
+        public void TwitchLogin()
+        {
+            if (!string.IsNullOrEmpty(account.channel_name) &&
+            !string.IsNullOrEmpty(account.oauth))
             {
-                button0, button1, button2, button3, button4,
-                button5, button6, button7, button8, button9,
-                button10, button11, button12, button13, button14,
-                button15, button16, button17, button18, button19,
-                button20, button21, button22, button23, button24
-            };
-            /*//RESET
-            for (int i = 0; i < 25; i++)
-            {
-                Extensions.SaveJsonFile(new SoundItem(i), buttons[i].Name);
-            }
-            return;*/
-            for (int i = 0; i < MAX_ITEMS; i++)
-            {
-                items.Add(Extensions.Load(buttons[i].Name));
-                if(items[i].path.Length > 0)
-                {
-                    buttons[i].Text = $"{items[i].name.Replace(".mp3", "")}\n\r\n\r[{items[i].key1} + {items[i].key2}]";
-                }        
+                IRC = new TwitchIRC(account.channel_name, account.oauth);
+                IRC.DataAvailable += IRC_DataAvailable;
+                ChangeState("Logging...");
             }
         }
+        public void Disconnect()
+        {
+            IRC.Disconnect();
+        }
+        delegate void SetTextCallback(string text);
+        private void ChangeState(string state)
+        {
+            if (this.InvokeRequired)
+            {
+                SetTextCallback d = new SetTextCallback(ChangeState);
+                this.Invoke(d, new object[] { state });
+            }
+            else
+            {
+                this.Text = $"Sound INVOKER [{state}]";
+            }
+        }
+
+        private void IRC_DataAvailable(object sender, EventArgs e)
+        {
+            if(!logged)
+            {
+                try { string result = IRC.Read(); }
+                catch 
+                {
+                    IRC.StopThread();
+                    IRC.Disconnect();
+                    MessageBox.Show("Error in twitch credentials.", "SoundInvoker", MessageBoxButtons.OK, MessageBoxIcon.Information); 
+                }
+                finally 
+                { 
+                    logged = true;
+                    Extensions.SaveAccount(account);
+                    ChangeState("Twich logged");
+                }
+            }
+            else
+            {
+                string result = IRC.Read();
+                //Console.WriteLine(result);
+            }
+        }
+
         //Key events
         private string key1 = "";
         private string key2 = "";
@@ -102,9 +148,9 @@ namespace SoundInvoker
 
             if(key1.Length > 0 && key2.Length > 0)
             {
-                if (ItemUI.INSTANCE != null)
+                if (AudioControl.INSTANCE != null)
                 {
-                    ItemUI.INSTANCE.SetKey(key1, key2);
+                    AudioControl.INSTANCE.SetKey(key1, key2);
                 }
                 if (optionsUI.IsOpen)
                 {
@@ -122,14 +168,11 @@ namespace SoundInvoker
                     return;
                 }
                 //
-                for (int i = 0; i < items.Count; i++)
+                for (int i = 0; i < audioITEM.Count; i++)
                 {
-                    if(items[i].path.Length > 0)
+                    if(audioITEM[i].key1 == key1 && audioITEM[i].key2 == key2)
                     {
-                        if(items[i].key1 == key1 && items[i].key2 == key2)
-                        {
-                            splayer.Play(items[i].path);
-                        }
+                        splayer.Play(audioITEM[i].path);
                     }
                 }
             }
@@ -137,62 +180,7 @@ namespace SoundInvoker
         //
         internal void SaveItem(SoundItem soundItem)
         {
-            int i = index;
-            items[i] = soundItem;
-            currentButton.Text = $"{soundItem.name}\n\r\n\r[{soundItem.key1} + {soundItem.key2}]";
-            Extensions.SaveJsonFile(soundItem, "button"+i);
-
-        }
-
-        private Button currentButton;
-        private int index;
-        private void MouseButton(object sender, MouseEventArgs e)
-        {
-            currentButton = (Button)sender;
-
-            if (currentButton == null) return;
-
-            index = GetButtonIndex(currentButton);
-            currentButton.Focus();
-
-            if (e.Button == MouseButtons.Left) splayer.Play(items[index].path);
-
-            else if (e.Button == MouseButtons.Right)
-            {
-                ContextMenu menu = new ContextMenu();
-                menu.MenuItems.Add("Edit");
-                menu.MenuItems[0].Click += EditButton;
-                menu.MenuItems.Add("Clear");
-                menu.MenuItems[1].Click += ClearButton;
-                menu.Show((Control)sender, e.Location);
-            }
-        }
-        private void EditButton(object sender, EventArgs e)
-        {
-            ItemUI itemUI = new ItemUI();
-            itemUI.ShowDialog(this);
-        }
-        private void ClearButton(object sender, EventArgs e)
-        {
-            if (currentButton.Text.Length == 0) return;
-            splayer.Loaded(items[index].path);
-            currentButton.Text = "";
-
-            items[GetButtonIndex(currentButton)] = new SoundItem();
-            Extensions.SaveJsonFile(new SoundItem(), currentButton.Name);
-        }
-        private int GetButtonIndex(Button button)
-        {
-            return int.Parse(button.Name.Replace("button", ""));
-        }
-        //Window event
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            if (this.WindowState == FormWindowState.Minimized)
-            {
-                notifyIcon.Visible = true;
-                Hide();
-            }
+            Extensions.Save(soundItem, soundItem.name);
         }
         private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -200,13 +188,24 @@ namespace SoundInvoker
             this.WindowState = FormWindowState.Normal;
             notifyIcon.Visible = false;
         }
-
-        private void MainForm_KeyDown(object sender, KeyEventArgs e)
+        private void AddNewAudioToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if(e.KeyCode == Keys.Escape)
-            {
-                if(!optionsUI.IsOpen) optionsUI.ShowDialog(this);
-            }
+            flowLayoutPanel.Controls.Add(new AudioControl());
+        }
+        internal void DeleteControl(Control control)
+        {
+            flowLayoutPanel.Controls.Remove(control);
+        }
+
+        private void ConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            optionsUI.ShowDialog(this);
+            optionsUI.Reload();
+        }
+
+        private void TwitchConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            twitchOptions.ShowDialog(this);
         }
     }
 }
