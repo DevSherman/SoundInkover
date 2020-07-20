@@ -57,3 +57,10 @@ obj/Debug/DesignTimeResolveAssemblyReferences.cache
 obj/Debug/build.force
 obj/Debug/AxInterop.WMPLib.dll
 bin/Debug/account.json
+bin/Release/account.json
+.vs/SoundInvoker/v16/Server/sqlite3/storage.ide-wal
+.vs/SoundInvoker/v16/Server/sqlite3/storage.ide-shm
+.vs/SoundInvoker/v16/.suo
+.vs/SoundInvoker/v16/.suo
+obj/Release/SoundInvoker.TwitchOptions.resources
+.vs/SoundInvoker/v16/.suo

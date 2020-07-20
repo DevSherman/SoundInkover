@@ -104,6 +104,7 @@
             this.autoLogin.TabIndex = 6;
             this.autoLogin.Text = "AutoLogin";
             this.autoLogin.UseVisualStyleBackColor = true;
+            this.autoLogin.CheckedChanged += new System.EventHandler(this.AutoLogin_CheckedChanged);
             // 
             // TwitchOptions
             // 

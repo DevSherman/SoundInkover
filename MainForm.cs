@@ -13,7 +13,7 @@ namespace SoundInvoker
             InitializeComponent();
         }
         private const int MAX_ITEMS = 25;
-        private int DELAY = 100;
+        private int DELAY = 500;
 
         public static MainForm INSTANCE;
         private OptionsUI optionsUI;
@@ -60,6 +60,12 @@ namespace SoundInvoker
             listener = new KeyboardListener();
             listener.KeyDown += Listener_KeyDown;
             listener.KeyUp += Listener_KeyUp;
+        }
+
+        internal void AutoLogin(bool value)
+        {
+            account.auto_login = value;
+            Extensions.SaveAccount(account);
         }
 
         public void TwitchLogin()

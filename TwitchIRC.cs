@@ -43,6 +43,7 @@ namespace SoundInvoker
         }
         public void Disconnect()
         {
+            timer.Stop();
             socket.Disconect();
         }
 

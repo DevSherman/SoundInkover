@@ -40,5 +40,10 @@ namespace SoundInvoker
             autoLogin.Checked = account.auto_login;
             if (MainForm.INSTANCE.logged) buttonConnection.Text = "DISCONECT";
         }
+
+        private void AutoLogin_CheckedChanged(object sender, System.EventArgs e)
+        {
+            MainForm.INSTANCE.AutoLogin(autoLogin.Checked);
+        }
     }
 }
