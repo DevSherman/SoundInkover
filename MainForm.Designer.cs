@@ -64,7 +64,8 @@
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(747, 24);
-            this.menuStrip.TabIndex = 1;
+            this.menuStrip.TabIndex = 0;
+            this.menuStrip.TabStop = true;
             this.menuStrip.Text = "menuStrip1";
             // 
             // commandToolStripMenuItem
@@ -78,7 +79,7 @@
             // addNewAudioToolStripMenuItem
             // 
             this.addNewAudioToolStripMenuItem.Name = "addNewAudioToolStripMenuItem";
-            this.addNewAudioToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.addNewAudioToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addNewAudioToolStripMenuItem.Text = "Add new audio";
             this.addNewAudioToolStripMenuItem.Click += new System.EventHandler(this.AddNewAudioToolStripMenuItem_Click);
             // 
@@ -122,6 +123,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Sound INVOKER";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();

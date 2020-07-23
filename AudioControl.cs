@@ -8,12 +8,14 @@ namespace SoundInvoker
         public static AudioControl INSTANCE;
         private SoundItem item;
         private OpenFileDialog filedialog;
+        public bool inKeySet;
 
         public AudioControl()
         {
             InitializeComponent();
             INSTANCE = this;
             item = new SoundItem();
+            inKeySet = false;
         }
         public void SetAudio(SoundItem item)
         {
@@ -22,6 +24,7 @@ namespace SoundInvoker
             cmdName.Text = item.cmd;
             openAudioFileButton.Text = item.name;
             shortcutButton.Text = item.key1 + "+" + item.key2;
+            inKeySet = false;
         }
         private void OpenAudioFileButton_Click(object sender, EventArgs e)
         {
@@ -56,7 +59,6 @@ namespace SoundInvoker
                 this.Dispose();
             }
         }
-        public bool inKeySet = false;
         private void ShortcutButton_Click(object sender, EventArgs e)
         {
             inKeySet = true;

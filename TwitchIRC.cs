@@ -11,7 +11,7 @@ namespace SoundInvoker
 
         public event EventHandler DataAvailable;
 
-        public string currentData;
+        private string currentData;
         private Timer timer;
 
         public void StopThread()
@@ -36,7 +36,7 @@ namespace SoundInvoker
             socket.WriteLine("JOIN #" + CHANNEL_NAME);
             socket.FlushWriter();
 
-            timer = new Timer(500);
+            timer = new Timer(100);
             timer.Elapsed += Timer_Elapsed;
             timer.AutoReset = true;
             timer.Enabled = true;
@@ -45,6 +45,11 @@ namespace SoundInvoker
         {
             timer.Stop();
             socket.Disconect();
+        }
+
+        public string GetData()
+        {
+            return currentData;
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -56,7 +61,7 @@ namespace SoundInvoker
             }
         }
 
-        public string Read()
+        private string Read()
         {
             var result = socket.ReadLine();
 
@@ -67,7 +72,7 @@ namespace SoundInvoker
                 intIndexParseSign = result.IndexOf(" :");
                 return result.Substring(intIndexParseSign + 2);
             }
-            return "";
+            return result;
         }
         public void SendIRC(string message)
         {

@@ -25,8 +25,6 @@ namespace SoundInvoker
         public bool logged = false;
         private TwitchIRC IRC;
 
-        //oauth:j9sh9gd5twuf98cct19w9zk44ycqvg
-
         private SoundPlayer splayer;
         public SoundPlayer GetSoundPlayer() { return splayer; }
 
@@ -55,7 +53,6 @@ namespace SoundInvoker
             if (account.auto_login) TwitchLogin();
 
             splayer = new SoundPlayer(optionsUI.options.max_cache);
-            audioITEM = new List<SoundItem>(MAX_ITEMS);
 
             listener = new KeyboardListener();
             listener.KeyDown += Listener_KeyDown;
@@ -95,12 +92,11 @@ namespace SoundInvoker
                 this.Text = $"Sound INVOKER [{state}]";
             }
         }
-
         private void IRC_DataAvailable(object sender, EventArgs e)
         {
             if(!logged)
             {
-                try { string result = IRC.Read(); }
+                try { string result = IRC.GetData(); }
                 catch 
                 {
                     IRC.StopThread();
@@ -111,13 +107,15 @@ namespace SoundInvoker
                 { 
                     logged = true;
                     Extensions.SaveAccount(account);
-                    ChangeState("Twich logged");
+                    ChangeState("Twitch logged");
                 }
             }
             else
             {
-                string result = IRC.Read();
-                //Console.WriteLine(result);
+                string result = IRC.GetData();
+                for (int i = 0; i < audioITEM.Count; i++)
+                    if(audioITEM[i].cmd == result)
+                        splayer.AddUrlToPlay(audioITEM[i].path);
             }
         }
 
@@ -154,7 +152,7 @@ namespace SoundInvoker
 
             if(key1.Length > 0 && key2.Length > 0)
             {
-                if (AudioControl.INSTANCE != null)
+                if (AudioControl.INSTANCE != null && AudioControl.INSTANCE.inKeySet == true)
                 {
                     AudioControl.INSTANCE.SetKey(key1, key2);
                 }
@@ -212,6 +210,11 @@ namespace SoundInvoker
         private void TwitchConfigurationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             twitchOptions.ShowDialog(this);
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            notifyIcon.Dispose();
         }
     }
 }
